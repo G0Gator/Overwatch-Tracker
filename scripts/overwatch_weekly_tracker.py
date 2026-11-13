@@ -143,11 +143,17 @@ def format_snapshot_date(value: Optional[str]) -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
-def fetch_player_data(player_id: str, platform: str, gamemode: str, api_base_url: str) -> Dict[str, Any]:
+def fetch_player_data(player_id: str, platform: str, gamemode: str, api_base_url: str) -> Optional[Dict[str, Any]]:
     summary_url = f"{api_base_url.rstrip('/')}/players/{player_id}/summary"
     stats_url = f"{api_base_url.rstrip('/')}/players/{player_id}/stats/summary"
-    summary_payload = fetch_json(summary_url)
-    stats_payload = fetch_json(stats_url, params={"platform": platform, "gamemode": gamemode})
+    try:
+        summary_payload = fetch_json(summary_url)
+        stats_payload = fetch_json(stats_url, params={"platform": platform, "gamemode": gamemode})
+    except requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 404:
+            print(f"Skipping {player_id}: OverFast returned 404 (player not found or BattleTag is wrong).")
+            return None
+        raise
 
     username = summary_payload.get("username") or player_id
     rank_data = safe_get(summary_payload, "competitive", platform, default={})
@@ -177,6 +183,8 @@ def main() -> None:
     for player_id in player_ids:
         print(f"Fetching {player_id} ...")
         data = fetch_player_data(player_id, args.platform, args.gamemode, args.api_base_url)
+        if data is None:
+            continue
         row = build_row(snapshot_date, data["player_id"], data["username"], data)
         existing_row_number = row_exists(worksheet, snapshot_date, data["player_id"], args.platform, args.gamemode)
         if existing_row_number:
