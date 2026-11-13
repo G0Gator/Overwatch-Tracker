@@ -1,0 +1,4 @@
+requests>=2.32.0
+gspread>=6.1.2
+google-auth>=2.39.0
+google-api-python-client>=2.137.0
