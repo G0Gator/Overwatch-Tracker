@@ -7,7 +7,7 @@ pipeline {
 
   environment {
     OVERFAST_API_BASE_URL = 'https://overfast-api.tekrop.fr'
-    PLAYER_IDS = 'CR33PRSWXXPR-1604'
+    PLAYER_IDS = 'cr33prswxxpr-1604'
     PLATFORM = 'pc'
     GAMEMODE = 'competitive'
     SPREADSHEET_ID = '131tdUKSHkx7iVSEGykTJuwhRDS0Web5-9jAvgsTl3LY'
